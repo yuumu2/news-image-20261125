@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 from pathlib import Path
 
@@ -15,8 +14,13 @@ def main() -> int:
     with image:
         output_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
         output_dir.mkdir(parents=True, exist_ok=True)
-        with (output_dir / "entry.png").open("wb") as output:
-            shutil.copyfileobj(image, output)
+        destination = output_dir / "entry.png"
+        bytes_copied = 0
+        with destination.open("wb") as output:
+            for chunk in iter(lambda: image.read(64 * 1024), b""):
+                bytes_copied += output.write(chunk)
+
+    print(f"Copied {bytes_copied} bytes from {source} to {destination}")
     return 0
 
 
